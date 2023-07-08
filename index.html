@@ -6,11 +6,44 @@
     <title>Document</title>
   </head>
   <body>
-    <video controls width="700" height="400">
-      <source
-        src="https://api.onedrive.com/v1.0/shares/s!AtbDU6WSkdycoGa5ER_wfVYoXVdq/root/content"
-        type="video/mp4"
-      />
-    </video>
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Displaying MKV Video with External Subtitles</title>
+        <link rel="stylesheet" href="https://cdn.plyr.io/3.6.8/plyr.css" />
+      </head>
+      <body>
+        <video id="player" controls>
+          <source src="text.mkv" type="video/mkv" />
+        </video>
+
+        <script src="https://cdn.plyr.io/3.6.8/plyr.js"></script>
+        <script>
+          document.addEventListener("DOMContentLoaded", () => {
+            const player = new Plyr("#player", {
+              captions: { defaultActive: true, update: true },
+            });
+            player.source = {
+              type: "video",
+              sources: [
+                {
+                  src: "video.mkv",
+                  type: "video/mkv",
+                },
+              ],
+              tracks: [
+                {
+                  kind: "captions",
+                  label: "English",
+                  srclang: "en",
+                  src: "captions.vtt",
+                  default: true,
+                },
+              ],
+            };
+          });
+        </script>
+      </body>
+    </html>
   </body>
 </html>
