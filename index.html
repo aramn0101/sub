@@ -4,56 +4,42 @@
     <title>Auto-Loading Subtitles</title>
   </head>
   <body>
-    <video id="videoPlayer" controls></video>
-
+    <div id="video-player">
+      <video id="video-element" src="Video.mkv" controls></video>
+    </div>
     <script>
-      const videoPlayer = document.getElementById("videoPlayer");
-      const videoURL =
-        "https://api.onedrive.com/v1.0/shares/s!AtbDU6WSkdycoGa5ER_wfVYoXVdq/root/content";
+      const videoElement = document.getElementById("video-element");
+      const subtitleSelect = document.getElementById("subtitle-select");
 
-      fetchSubtitles(videoURL)
-        .then((subtitlesURL) => {
-          videoPlayer.addEventListener("loadedmetadata", function () {
-            const textTrack = videoPlayer.addTextTrack(
-              "captions",
-              "English",
-              "en"
-            );
-            textTrack.mode = "showing";
-            textTrack.src = subtitlesURL;
-          });
-
-          videoPlayer.src = videoURL;
-        })
-        .catch((error) => {
-          videoPlayer.src = videoURL;
-        });
-
-      function fetchSubtitles(videoURL) {
-        return new Promise((resolve, reject) => {
-          worker.onmessage = function (event) {
-            const { type, data } = event.data;
-            if (type === "ffmpeg-stdout") {
-              const output = data.trim();
-              const subtitlesMatch = output.match(
-                /(.*Stream #.*:.*Subtitle:.*vobsub.*)/i
+      fetch("/api/getSubtitles")
+        .then((response) => response.json())
+        .then((subtitles) => {
+          if (subtitles && subtitles.length > 0) {
+            subtitles.forEach((subtitle) => {
+              const option = document.createElement("option");
+              option.value = subtitle.url;
+              option.textContent = subtitle.label;
+              subtitleSelect.appendChild(option);
+            });
+          }
+          subtitleSelect.addEventListener("change", () => {
+            const selectedSubtitle = subtitleSelect.value;
+            if (selectedSubtitle) {
+              const trackElement = document.createElement("track");
+              trackElement.src = selectedSubtitle;
+              trackElement.kind = "subtitles";
+              trackElement.default = true;
+              videoElement.appendChild(trackElement);
+            } else {
+              const trackElement = videoElement.querySelector(
+                'track[kind="subtitles"]'
               );
-              if (subtitlesMatch) {
-                const subtitles = subtitlesMatch[1].trim();
-                const vttBlob = new Blob([subtitles], { type: "text/vtt" });
-                const subtitlesURL = URL.createObjectURL(vttBlob);
-                resolve(subtitlesURL);
-              } else {
-                reject("No subtitles found in the video.");
+              if (trackElement) {
+                trackElement.remove();
               }
-            } else if (type === "ffmpeg-stderr") {
-              reject(data);
             }
-          };
-
-          worker.postMessage({ type: "run", arguments: ["-i", videoURL] });
+          });
         });
-      }
     </script>
   </body>
 </html>
