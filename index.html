@@ -1,45 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Auto-Loading Subtitles</title>
+    <title>Autoload Subtitle for MKV Video</title>
   </head>
   <body>
-    <div id="video-player">
-      <video id="video-element" src="Video.mkv" controls></video>
-    </div>
+    <video id="videoPlayer" controls></video>
     <script>
-      const videoElement = document.getElementById("video-element");
-      const subtitleSelect = document.getElementById("subtitle-select");
+      const videoSource = "Video.mkv";
+      const subtitleURL = "captions.vtt";
 
-      fetch("captions.vtt")
-        .then((response) => response.json())
-        .then((subtitles) => {
-          if (subtitles && subtitles.length > 0) {
-            subtitles.forEach((subtitle) => {
-              const option = document.createElement("option");
-              option.value = subtitle.url;
-              option.textContent = subtitle.label;
-              subtitleSelect.appendChild(option);
-            });
-          }
-          subtitleSelect.addEventListener("change", () => {
-            const selectedSubtitle = subtitleSelect.value;
-            if (selectedSubtitle) {
-              const trackElement = document.createElement("track");
-              trackElement.src = selectedSubtitle;
-              trackElement.kind = "subtitles";
-              trackElement.default = true;
-              videoElement.appendChild(trackElement);
-            } else {
-              const trackElement = videoElement.querySelector(
-                'track[kind="subtitles"]'
-              );
-              if (trackElement) {
-                trackElement.remove();
-              }
-            }
-          });
-        });
+      const videoPlayer = document.getElementById("videoPlayer");
+
+      videoPlayer.src = videoSource;
+
+      videoPlayer.addEventListener("canplay", () => {
+        const subtitleTrack = document.createElement("track");
+        subtitleTrack.kind = "subtitles";
+        subtitleTrack.src = subtitleURL;
+        subtitleTrack.srclang = "en";
+        subtitleTrack.label = "English";
+
+        videoPlayer.appendChild(subtitleTrack);
+
+        subtitleTrack.mode = "showing";
+      });
     </script>
   </body>
 </html>
