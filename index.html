@@ -11,7 +11,7 @@
       const videoElement = document.getElementById("video-element");
       const subtitleSelect = document.getElementById("subtitle-select");
 
-      fetch("/api/getSubtitles")
+      fetch("")
         .then((response) => response.json())
         .then((subtitles) => {
           if (subtitles && subtitles.length > 0) {
